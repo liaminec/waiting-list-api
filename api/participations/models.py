@@ -3,16 +3,15 @@ from uuid import UUID
 
 from sqlmodel import Field, Relationship
 
-from api.common.db.models import TimedModel
-from api.events.models import Event, Representation, Offer
-from api.users.models import User
+from common.db.models import Model
+from events.models import Representation, Offer
+from users.models import User
 
 
-class Participation(TimedModel):
+class Participation(Model, table=True):
     confirmed: bool = Field(default=False)
     pending: bool = Field(default=False)
     wait_list: bool = Field(default=False)
-    canceled: bool = Field(default=False)
     confirmed_at: datetime | None = Field(default=None)
     pending_at: datetime | None = Field(default=None)
     waiting_at: datetime | None = Field(default=None)

@@ -2,27 +2,25 @@ from datetime import datetime
 
 from sqlmodel import Field, Relationship
 
-from api.common.db.models import Model, ItemTimedModel
-from api.users.models import Organization
+from common.db.models import Model, ItemModel
+from users.models import Organization
 
 
-class Event(ItemTimedModel, table=True):
+class Event(ItemModel, table=True):
     title: str = Field(max_length=255)
     description: str = Field(max_length=500)
     thumbnail_url: str
-    venue_name: str = Field(max_length=500)
-    venue_address: str
-    event_date: datetime
+    venue_name: str = Field(max_length=255)
+    venue_address: str = Field(max_length=255)
     timezone: str = Field(max_length=50)
 
     organization_id: int = Field(foreign_key="organization.id")
     organization: Organization = Relationship(back_populates="events")
     representations: list["Representation"] = Relationship(back_populates="event")
+    offers: list["Offer"] = Relationship(back_populates="event")
 
 
-class Representation(ItemTimedModel, table=True):
-    name: str = Field(max_length=500)
-    artist: str
+class Representation(ItemModel, table=True):
     start_datetime: datetime
     end_datetime: datetime
 
@@ -40,20 +38,20 @@ class OfferType(Model, table=True):
     offers: list["Offer"] = Relationship(back_populates="type")
 
 
-class Offer(ItemTimedModel, table=True):
+class Offer(ItemModel, table=True):
     name: str = Field(max_length=255)
     max_quantity_per_order: int
     description: str = Field(max_length=500)
 
     event_id: str = Field(foreign_key="event.id")
-    event = Relationship(back_populates="event")
+    event: Event = Relationship(back_populates="offers")
     type_id: int = Field(foreign_key="offertype.id")
     type: OfferType = Relationship(back_populates="offers")
     inventories: list["Inventory"] = Relationship(back_populates="offer")
     participations: list["Participation"] = Relationship(back_populates="offer")
 
 
-class Inventory(ItemTimedModel, table=True):
+class Inventory(ItemModel, table=True):
     total_stock: int
     available_stock: int
 

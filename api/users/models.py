@@ -1,18 +1,23 @@
 from datetime import datetime
+from uuid import UUID, uuid4
 
-from sqlmodel import Relationship
+from sqlmodel import Relationship, SQLModel, Field
 
-from api.common.db.models import TimedModel
+from common.db.models import Model
 
 
-class User(TimedModel, table=True):
-    firstname: str
-    lastname: str
+class User(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    email: str = Field(max_length=255)
+    firstname: str = Field(max_length=255)
+    lastname: str = Field(max_length=255)
     birthdate: datetime
-    address: str
+    address: str = Field(max_length=255)
+
+    participations: list["Participation"] = Relationship(back_populates="user")
 
 
-class Organization(TimedModel, table=True):
-    name: str
+class Organization(Model, table=True):
+    name: str = Field(max_length=255)
 
     events: list["Event"] = Relationship(back_populates="organization")
