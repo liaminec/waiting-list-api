@@ -1,0 +1,16 @@
+id,event_id,name,type_id,max_quantity_per_order,description
+off_001,ev_001,General Admission,1,4,Standard entry to Jazz Festival
+off_002,ev_001,VIP Package,1,2,Premium access with backstage pass
+off_003,ev_002,Standard Ticket,1,6,Regular admission to Rock Concert
+off_004,ev_002,Meet & Greet,1,1,Concert ticket with artist meet & greet
+off_005,ev_003,Orchestra Seats,1,4,Premium seating for Classical Evening
+off_006,ev_003,Balcony Seats,1,6,Upper level seating
+off_007,ev_004,Floor Tickets,1,8,Standing room on main floor
+off_008,ev_004,Reserved Seating,1,4,Assigned seats for Pop Extravaganza
+off_009,ev_005,Early Bird,1,10,Discounted EDM tickets
+off_010,ev_005,VIP Table,1,2,Private table with bottle service
+off_011,ev_006,Comedy Night Pass,1,4,Access to all comedy shows
+off_012,ev_007,Battle Pass,1,6,Entry to Hip Hop Battle event
+off_013,ev_008,Folk Festival Pass,1,4,Multi-day folk festival access
+off_014,ev_009,Metal Pit,1,8,Standing pit access for Metal show
+off_015,ev_010,Musical Theater Premium,1,2,Best seats for Musical Theater

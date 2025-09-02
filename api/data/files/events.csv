@@ -1,0 +1,11 @@
+id,title,description,thumbnail_url,organization_id,venue_name,venue_address,timezone
+ev_001,Jazz Festival 2025,Annual jazz festival featuring world-class musicians,https://example.com/jazz.jpg,1,Olympia,48 Rue de l'olympia,Europe/Paris
+ev_002,Rock Concert,High-energy rock performance,https://example.com/rock.jpg,1,Le Zénith,15 rue de la fiesta,Europe/Paris
+ev_003,Classical Evening,Elegant classical music concert,https://example.com/classical.jpg,1,Paris MK2,7 quai de la Loire,Europe/Paris
+ev_004,Pop Extravaganza,Popular music hits all night,https://example.com/pop.jpg,BILLY,Olympia,48 Rue de l'olympia,Europe/Paris
+ev_005,Electronic Dance Night,Underground electronic music experience,https://example.com/edm.jpg,1,Le Zénith,15 rue de la fiesta,Europe/Paris
+ev_006,Comedy Show,Stand-up comedy evening with top comedians,https://example.com/comedy.jpg,1,Paris MK2,7 quai de la Loire,Europe/Paris
+ev_007,Hip Hop Battle,Urban music and dance competition,https://example.com/hiphop.jpg,1,Olympia,48 Rue de l'olympia,Europe/Paris
+ev_008,Indie Folk Festival,Intimate acoustic performances,https://example.com/folk.jpg,1,Le Zénith,15 rue de la fiesta,Europe/Paris
+ev_009,Metal Madness,Heavy metal concert series,https://example.com/metal.jpg,1,Paris MK2,7 quai de la Loire,Europe/Paris
+ev_010,Musical Theater,Broadway-style musical performance,https://example.com/theater.jpg,1,Olympia,48 Rue de l'olympia,Europe/Paris
