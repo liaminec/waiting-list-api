@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from sqlmodel_serializers import SQLModelSerializer
 
-from api.events.serializers import RepresentationLightSerializer, OfferLightSerializer
-from api.participations.models import Participation
-from api.users.serializers import UserLightSerializer
+from events.serializers import RepresentationLightSerializer, OfferLightSerializer
+from participations.models import Participation
+from users.serializers import UserLightSerializer
 
 
 class ParticipationPostSerializer(SQLModelSerializer):

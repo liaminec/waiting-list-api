@@ -1,6 +1,6 @@
 from sqlmodel_serializers import SQLModelSerializer
 
-from api.events.models import Event, Representation, Offer
+from events.models import Event, Representation, Offer
 
 
 class EventLightSerializer(SQLModelSerializer):
