@@ -1,14 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 
-from config import engine
+from common.dependencies import get_session
 from users.models import User
 
 router = APIRouter(prefix="/users")
 
 
 @router.get("/", response_model=list[User])
-def get_users():
-    with Session(engine) as session:
-        results = session.exec(select(User)).all()
-        return results
+def get_users(session: Session = Depends(get_session)):
+    results = session.exec(select(User)).all()
+    return results
