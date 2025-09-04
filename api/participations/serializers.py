@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, validator
 from sqlmodel_serializers import SQLModelSerializer
 
@@ -7,7 +9,7 @@ from users.serializers import UserLightSerializer
 
 
 class ParticipationSerializer(SQLModelSerializer):
-    user: UserLightSerializer
+    user: UserLightSerializer | None = None
     offer: OfferLightSerializer
     representation: RepresentationLightSerializer
 
