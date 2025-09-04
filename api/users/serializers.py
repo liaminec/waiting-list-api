@@ -12,4 +12,4 @@ class UserSerializer(SQLModelSerializer):
 class UserLightSerializer(SQLModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "firstname", "lastname")
+        fields = ("id", "firstname", "lastname", "email")
