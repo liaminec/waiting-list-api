@@ -87,7 +87,7 @@ def participation_check(
     "/join-waiting-list", response_model=ParticipationSerializer, status_code=201
 )
 def join_waiting_list(
-        data: ParticipationPostSerializer, session: Session = Depends(get_session)
+    data: ParticipationPostSerializer, session: Session = Depends(get_session)
 ):
     """
     Api route to join the waiting list for a given user, offer, representation
@@ -129,7 +129,7 @@ def join_waiting_list(
 
 @router.post("/leave-waiting-list")
 def leave_waiting_list(
-        data: ParticipationPostLightSerializer, session: Session = Depends(get_session)
+    data: ParticipationPostLightSerializer, session: Session = Depends(get_session)
 ):
     """
     Api route to leave the waiting list for a given user, offer and representation
@@ -145,9 +145,7 @@ def leave_waiting_list(
             )
         ).one()
     except NoResultFound:
-        raise HTTPException(
-            status_code=404, detail="You are not in the waiting list"
-        )
+        raise HTTPException(status_code=404, detail="You are not in the waiting list")
     session.delete(participation)
     session.commit()
     return JSONResponse(
@@ -160,7 +158,7 @@ def leave_waiting_list(
     "/check-waiting-status", response_model=WaitingListRankSerializer, status_code=200
 )
 def check_waiting_status(
-        data: CheckWaitingListRankSerializer, session: Session = Depends(get_session)
+    data: CheckWaitingListRankSerializer, session: Session = Depends(get_session)
 ):
     """
     Api route to check the position of a user on the waiting list for a given offer
@@ -219,7 +217,7 @@ def check_waiting_status(
 
 @router.post("/join-event", response_model=ParticipationSerializer, status_code=201)
 def join_event(
-        data: ParticipationPostSerializer, session: Session = Depends(get_session)
+    data: ParticipationPostSerializer, session: Session = Depends(get_session)
 ):
     """
     API route to make a user join an event for a given offer and representation
@@ -272,7 +270,7 @@ def join_event(
 
 @router.post("/cancel")
 def cancel(
-        data: ParticipationPostLightSerializer, session: Session = Depends(get_session)
+    data: ParticipationPostLightSerializer, session: Session = Depends(get_session)
 ):
     """
     API route to cancel the confirmed participation of a user to an event for a
@@ -340,9 +338,7 @@ def cancel(
         inventory.available_stock += quantity
     session.commit()
 
-    return JSONResponse(
-        content="Your participation has been canceled", status_code=200
-    )
+    return JSONResponse(content="Your participation has been canceled", status_code=200)
 
 
 # PENDING PARTICIPATION
@@ -350,7 +346,7 @@ def cancel(
 
 @router.post("/confirm", response_model=ParticipationSerializer)
 def confirm(
-        data: ParticipationPostLightSerializer, session: Session = Depends(get_session)
+    data: ParticipationPostLightSerializer, session: Session = Depends(get_session)
 ):
     """
     API route to confirm a pending (i.e. that just got out of the waiting list)

@@ -42,16 +42,14 @@ def get_representation(pk: str, session: Session = Depends(get_session)):
 
 @router.get("/{pk}/participations", response_model=list[ParticipationSerializer])
 def get_event_participations(
-    pk: str,
-    list_filter: str | None = None,
-    session: Session = Depends(get_session)
+    pk: str, list_filter: str | None = None, session: Session = Depends(get_session)
 ):
     if list_filter not in ("confirmed", "pending", "wait_list"):
         participations = session.exec(
             select(Participation, Offer, Representation, User)
-                .join(Representation)
-                .join(Offer)
-                .where(
+            .join(Representation)
+            .join(Offer)
+            .where(
                 Representation.event_id == pk,
             )
         ).all()
@@ -62,9 +60,7 @@ def get_event_participations(
             .join(Offer)
             .where(
                 Representation.event_id == pk,
-                or_(
-                    getattr(Participation, list_filter) == True
-                ),
+                or_(getattr(Participation, list_filter) == True),
             )
         ).all()
     return participations
