@@ -1,3 +1,4 @@
 id,email,firstname,lastname,birthdate,address
 eded3b2d-f651-4703-ad0c-ba9bbd26d9d7,testuser@test.com,Test,User,1994-01-01T20:00:00+02:00,test
 4756cf8e-6623-4cd7-9906-45d27ddc5510,liamine@test.com,Liamine,Cheridi,1994-09-21T20:00:00+02:00,test
+abff8e35-2475-46a3-80f9-f15b925aae5c,enimail@test.com,Enimail,Cheridi,1994-09-21T20:00:00+02:00,test

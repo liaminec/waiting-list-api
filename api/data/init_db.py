@@ -29,4 +29,5 @@ if __name__ == "__main__":
             session.execute(text("DELETE FROM event"))
             session.execute(text("DELETE FROM organization"))
             session.execute(text("DELETE FROM user"))
+            session.commit()
     print("The data was successfully loaded")
