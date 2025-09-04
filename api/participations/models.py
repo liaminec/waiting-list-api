@@ -12,6 +12,7 @@ class Participation(Model, table=True):
     confirmed: bool = Field(default=False)
     pending: bool = Field(default=False)
     wait_list: bool = Field(default=False)
+    quantity: int
     confirmed_at: datetime | None = Field(default=None)
     pending_at: datetime | None = Field(default=None)
     waiting_at: datetime | None = Field(default=None)
