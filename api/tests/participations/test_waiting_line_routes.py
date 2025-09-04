@@ -16,11 +16,11 @@ from users.models import User
 @pytest.mark.usefixtures("inventories")
 @freezegun.freeze_time(datetime(2025, 1, 1))
 def test_join_waiting_list_ok(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -35,8 +35,8 @@ def test_join_waiting_list_ok(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 201
         assert response.json() == {
@@ -51,7 +51,7 @@ def test_join_waiting_list_ok(
                 "id": str(user.id),
                 "email": user.email,
                 "firstname": user.firstname,
-                "lastname": user.lastname
+                "lastname": user.lastname,
             },
             "representation": {
                 "id": representation.id,
@@ -65,20 +65,19 @@ def test_join_waiting_list_ok(
                     "venue_name": representation.event.venue_name,
                     "venue_address": representation.event.venue_address,
                     "timezone": representation.event.timezone,
-                }
+                },
             },
             "offer": {
                 "id": offer.id,
                 "name": offer.name,
-                "type": {"label": offer.type.label}
-            }
+                "type": {"label": offer.type.label},
+            },
         }
         participation = session.exec(
-            select(Participation)
-            .where(
+            select(Participation).where(
                 Participation.user_id == user.id,
                 Participation.representation_id == representation.id,
-                Participation.offer_id == offer.id
+                Participation.offer_id == offer.id,
             )
         ).one()
         assert participation.wait_list
@@ -91,12 +90,12 @@ def test_join_waiting_list_ok(
 
 
 def test_join_waitlist_stock_available(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
-        inventories: list[Inventory]
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
+    inventories: list[Inventory],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -112,8 +111,8 @@ def test_join_waitlist_stock_available(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 403
         assert response.json()["detail"] == (
@@ -124,11 +123,11 @@ def test_join_waitlist_stock_available(
 
 @pytest.mark.usefixtures("inventories")
 def test_join_participation_already_exists(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -142,7 +141,7 @@ def test_join_participation_already_exists(
             offer_id=offer.id,
             representation_id=representation.id,
             confirmed=True,
-            quantity=1
+            quantity=1,
         )
         session.add(participation)
         session.commit()
@@ -152,13 +151,12 @@ def test_join_participation_already_exists(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 500
         assert response.json()["detail"] == (
-            "Your participation has "
-            "already been acknowledged"
+            "Your participation has " "already been acknowledged"
         )
         session.refresh(participation)
         assert not participation.wait_list
@@ -167,11 +165,11 @@ def test_join_participation_already_exists(
 
 @pytest.mark.usefixtures("inventories")
 def test_join_offer_does_not_exists(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -185,29 +183,28 @@ def test_join_offer_does_not_exists(
                 "user_id": str(user.id),
                 "offer_id": "nonexistent",
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 404
         assert response.json()["detail"] == "The requested offer does not exist"
         with pytest.raises(NoResultFound):
             session.exec(
-                select(Participation)
-                .where(
+                select(Participation).where(
                     Participation.user_id == user.id,
                     Participation.offer_id == "nonexistent",
-                    Participation.representation_id == representation.id
+                    Participation.representation_id == representation.id,
                 )
             ).one()
 
 
 @pytest.mark.usefixtures("inventories")
 def test_join_representation_does_not_exists(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -221,29 +218,30 @@ def test_join_representation_does_not_exists(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": "nonexistent",
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 404
-        assert response.json()["detail"] == "The requested representation does not exist"
+        assert (
+            response.json()["detail"] == "The requested representation does not exist"
+        )
         with pytest.raises(NoResultFound):
             session.exec(
-                select(Participation)
-                .where(
+                select(Participation).where(
                     Participation.user_id == user.id,
                     Participation.offer_id == offer.id,
-                    Participation.representation_id == "nonexistent"
+                    Participation.representation_id == "nonexistent",
                 )
             ).one()
 
 
 def test_join_quantity_exceeds(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
-        inventories: list[Inventory]
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
+    inventories: list[Inventory],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -259,32 +257,31 @@ def test_join_quantity_exceeds(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 100
-            }
+                "quantity": 100,
+            },
         )
         assert response.status_code == 500
         assert response.json()["detail"] == (
-                "Your order exceeds the maximum quantity allowed for this item\n"
-                f"Maximum quantity per order: {offer.max_quantity_per_order}"
-            )
+            "Your order exceeds the maximum quantity allowed for this item\n"
+            f"Maximum quantity per order: {offer.max_quantity_per_order}"
+        )
         with pytest.raises(NoResultFound):
             session.exec(
-                select(Participation)
-                .where(
+                select(Participation).where(
                     Participation.user_id == user.id,
                     Participation.offer_id == offer.id,
-                    Participation.representation_id == representation.id
+                    Participation.representation_id == representation.id,
                 )
             ).one()
 
 
 @pytest.mark.usefixtures("inventories")
 def test_leave_waiting_list_ok(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -299,7 +296,7 @@ def test_leave_waiting_list_ok(
             representation_id=representation.id,
             wait_list=True,
             waiting_at=datetime.now(),
-            quantity=1
+            quantity=1,
         )
         session.add(participation)
         session.commit()
@@ -309,33 +306,31 @@ def test_leave_waiting_list_ok(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 204
         assert response.json() == (
-            "The user has successfully been "
-            "removed from the waiting list"
+            "The user has successfully been " "removed from the waiting list"
         )
         with pytest.raises(NoResultFound):
             session.exec(
-                select(Participation)
-                .where(
+                select(Participation).where(
                     Participation.user_id == user.id,
                     Participation.offer_id == offer.id,
                     Participation.representation_id == representation.id,
-                    Participation.wait_list == True
+                    Participation.wait_list == True,
                 )
             ).one()
 
 
 @pytest.mark.usefixtures("inventories")
 def test_leave_waiting_list_not_in_list(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -350,8 +345,8 @@ def test_leave_waiting_list_not_in_list(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 404
         assert response.json()["detail"] == "You are not in the waiting list"
@@ -361,7 +356,7 @@ def test_leave_waiting_list_not_in_list(
             representation_id=representation.id,
             confirmed=True,
             confirmed_at=datetime.now(),
-            quantity=1
+            quantity=1,
         )
         session.add(participation)
         session.commit()
@@ -371,8 +366,8 @@ def test_leave_waiting_list_not_in_list(
                 "user_id": str(user.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-                "quantity": 1
-            }
+                "quantity": 1,
+            },
         )
         assert response.status_code == 404
         assert response.json()["detail"] == "You are not in the waiting list"
@@ -380,11 +375,11 @@ def test_leave_waiting_list_not_in_list(
 
 @pytest.mark.usefixtures("inventories")
 def test_check_waiting_status(
-        client: TestClient,
-        test_engine: Engine,
-        users: list[User],
-        offers: list[Offer],
-        representations: list[Representation],
+    client: TestClient,
+    test_engine: Engine,
+    users: list[User],
+    offers: list[Offer],
+    representations: list[Representation],
 ) -> None:
     with Session(test_engine) as session:
         session_add(session, users)
@@ -399,7 +394,7 @@ def test_check_waiting_status(
             representation_id=representation.id,
             confirmed=True,
             confirmed_at=datetime(2025, 1, 1),
-            quantity=1
+            quantity=1,
         )
         participation1 = Participation(
             user_id=user2.id,
@@ -407,7 +402,7 @@ def test_check_waiting_status(
             representation_id=representation.id,
             wait_list=True,
             waiting_at=datetime(2025, 1, 2),
-            quantity=1
+            quantity=1,
         )
         participation2 = Participation(
             user_id=user3.id,
@@ -415,7 +410,7 @@ def test_check_waiting_status(
             representation_id=representation.id,
             wait_list=True,
             waiting_at=datetime(2025, 1, 2, 10),
-            quantity=1
+            quantity=1,
         )
         session.add(participation0)
         session.add(participation1)
@@ -428,7 +423,7 @@ def test_check_waiting_status(
                 "user_id": str(user2.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-            }
+            },
         )
         assert response.status_code == 200
         assert response.json() == {
@@ -436,7 +431,7 @@ def test_check_waiting_status(
                 "id": str(user2.id),
                 "email": user2.email,
                 "firstname": user2.firstname,
-                "lastname": user2.lastname
+                "lastname": user2.lastname,
             },
             "representation": {
                 "id": representation.id,
@@ -450,15 +445,15 @@ def test_check_waiting_status(
                     "venue_name": representation.event.venue_name,
                     "venue_address": representation.event.venue_address,
                     "timezone": representation.event.timezone,
-                }
+                },
             },
             "offer": {
                 "id": offer.id,
                 "name": offer.name,
-                "type": {"label": offer.type.label}
+                "type": {"label": offer.type.label},
             },
             "position": 1,
-            "total": 2
+            "total": 2,
         }
         # Second in waiting list
         response = client.post(
@@ -467,7 +462,7 @@ def test_check_waiting_status(
                 "user_id": str(user3.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-            }
+            },
         )
         assert response.status_code == 200
         assert response.json() == {
@@ -475,7 +470,7 @@ def test_check_waiting_status(
                 "id": str(user3.id),
                 "email": user3.email,
                 "firstname": user3.firstname,
-                "lastname": user3.lastname
+                "lastname": user3.lastname,
             },
             "representation": {
                 "id": representation.id,
@@ -489,15 +484,15 @@ def test_check_waiting_status(
                     "venue_name": representation.event.venue_name,
                     "venue_address": representation.event.venue_address,
                     "timezone": representation.event.timezone,
-                }
+                },
             },
             "offer": {
                 "id": offer.id,
                 "name": offer.name,
-                "type": {"label": offer.type.label}
+                "type": {"label": offer.type.label},
             },
             "position": 2,
-            "total": 2
+            "total": 2,
         }
         # Not in waiting list
         response = client.post(
@@ -506,10 +501,9 @@ def test_check_waiting_status(
                 "user_id": str(user1.id),
                 "offer_id": offer.id,
                 "representation_id": representation.id,
-            }
+            },
         )
         assert response.status_code == 404
         assert response.json()["detail"] == (
-            "You are not in the waiting "
-            "list for this product"
+            "You are not in the waiting " "list for this product"
         )

@@ -4,45 +4,30 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session, exists, select, delete, func
+from sqlmodel import Session, exists, select, func
 
-from common.db.models import ItemModel, Model
+from common.db.utils import get_instance_by_id
 from common.db.utils import create
 from config import engine
 from events.models import Inventory, Offer, Representation
 from participations.models import Participation
 from participations.serializers import (
     ParticipationPostSerializer,
-    WaitingListRankSerializer, ParticipationSerializer, CheckWaitingListRankSerializer,
+    WaitingListRankSerializer,
+    ParticipationSerializer,
+    CheckWaitingListRankSerializer,
+    ParticipationPostLightSerializer,
 )
-from users.serializers import UserLightSerializer
 
 router = APIRouter(prefix="/participations")
 
 
-def get_instance(
-        model: ItemModel | Model, instance_id: str | int, session: Session
-) -> ItemModel | Model | None:
-    """
-    Get an instance of a model
-    :param model: The model of which we want an instance
-    :param instance_id: The id of the instance
-    :param session: An active session to a database
-    :return: The instance of the given model for the given id if it exist, else None
-    """
-    try:
-        instance = session.get(model, instance_id)
-    except NoResultFound:
-        return None
-    return instance
-
-
 def participation_check(
-        user_id: UUID,
-        offer_id: str,
-        representation_id: str,
-        quantity: int,
-        session: Session
+    user_id: UUID,
+    offer_id: str,
+    representation_id: str,
+    quantity: int,
+    session: Session,
 ) -> tuple[Offer, Representation]:
     """
     Check that a participation for the given data has not already been created,
@@ -59,23 +44,30 @@ def participation_check(
         exists(Participation).where(
             Participation.user_id == user_id,
             Participation.representation_id == representation_id,
-            Participation.offer_id == offer_id
+            Participation.offer_id == offer_id,
         )
     ).scalar()
     if existing_participations:
         raise HTTPException(
-            status_code=500,
-            detail="Your participation has already been acknowledged"
+            status_code=500, detail="Your participation has already been acknowledged"
         )
-    offer = get_instance(Offer, offer_id, session)
+    offer = get_instance_by_id(Offer, offer_id, session)
     if not offer:
         raise HTTPException(
             status_code=404, detail="The requested offer does not exist"
         )
-    representation = get_instance(Representation, representation_id, session)
+    representation = get_instance_by_id(Representation, representation_id, session)
     if not representation:
         raise HTTPException(
             status_code=404, detail="The requested representation does not exist"
+        )
+    if offer.event_id != representation.event_id:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "The requested offer does not apply to the requested representation, "
+                "they are not part of the same event"
+            ),
         )
     if quantity > offer.max_quantity_per_order:
         raise HTTPException(
@@ -83,12 +75,13 @@ def participation_check(
             detail=(
                 "Your order exceeds the maximum quantity allowed for this item\n"
                 f"Maximum quantity per order: {offer.max_quantity_per_order}"
-            )
+            ),
         )
     return offer, representation
 
 
 # WAITING LIST
+
 
 @router.post(
     "/join-waiting-list", response_model=ParticipationSerializer, status_code=201
@@ -108,16 +101,15 @@ def join_waiting_list(data: ParticipationPostSerializer):
         )
         try:
             available_stock = session.exec(
-                select(Inventory.available_stock)
-                .where(
+                select(Inventory.available_stock).where(
                     Inventory.offer_id == offer_id,
-                    Inventory.representation_id == representation_id
+                    Inventory.representation_id == representation_id,
                 )
             ).one()
         except NoResultFound:
             raise HTTPException(
                 status_code=404,
-                detail="The requested item is not available for this representation"
+                detail="The requested item is not available for this representation",
             )
         if available_stock > 0:
             raise HTTPException(
@@ -125,7 +117,7 @@ def join_waiting_list(data: ParticipationPostSerializer):
                 detail=(
                     "The waiting list for this product is not open yet, "
                     f"there are still {available_stock} units available"
-                )
+                ),
             )
         participation = Participation(
             wait_list=True, waiting_at=datetime.now(), **data_dict
@@ -148,7 +140,7 @@ def leave_waiting_list(data: ParticipationPostSerializer):
                     Participation.user_id == data_dict["user_id"],
                     Participation.representation_id == data_dict["representation_id"],
                     Participation.offer_id == data_dict["offer_id"],
-                    Participation.wait_list == True
+                    Participation.wait_list == True,
                 )
             ).one()
         except NoResultFound:
@@ -159,7 +151,7 @@ def leave_waiting_list(data: ParticipationPostSerializer):
         session.commit()
     return JSONResponse(
         content="The user has successfully been removed from the waiting list",
-        status_code=204
+        status_code=204,
     )
 
 
@@ -182,22 +174,23 @@ def check_waiting_status(data: CheckWaitingListRankSerializer):
                     Participation.representation_id == representation_id,
                     Participation.offer_id == offer_id,
                     Participation.user_id == data_dict["user_id"],
-                    Participation.wait_list == True
+                    Participation.wait_list == True,
                 )
             ).one()
         except NoResultFound:
             raise HTTPException(
                 status_code=404,
-                detail="You are not in the waiting list for this product"
+                detail="You are not in the waiting list for this product",
             )
-        # Get the position
+        # Get the total number of participations in the waiting list for the offer
+        # and representation, and the user's position
         total = session.exec(
             select(func.count())
             .select_from(Participation)
             .where(
                 Participation.wait_list == True,
                 Participation.representation_id == representation_id,
-                Participation.offer_id == offer_id
+                Participation.offer_id == offer_id,
             )
         ).one()
         position = session.exec(
@@ -207,7 +200,7 @@ def check_waiting_status(data: CheckWaitingListRankSerializer):
                 Participation.wait_list == True,
                 Participation.representation_id == representation_id,
                 Participation.offer_id == offer_id,
-                Participation.waiting_at <= participation.waiting_at
+                Participation.waiting_at <= participation.waiting_at,
             )
         ).one()
         return WaitingListRankSerializer(
@@ -215,13 +208,14 @@ def check_waiting_status(data: CheckWaitingListRankSerializer):
             representation=participation.representation,
             offer=participation.offer,
             position=position,
-            total=total
+            total=total,
         )
 
 
 # REGULAR PARTICIPATION
 
-@router.post("/join-event", response_model=Participation)
+
+@router.post("/join-event", response_model=ParticipationSerializer, status_code=201)
 def join_event(data: ParticipationPostSerializer):
     """
     API route to make a user join an event for a given offer and representation
@@ -238,29 +232,29 @@ def join_event(data: ParticipationPostSerializer):
             inventory = session.exec(
                 select(Inventory).where(
                     Inventory.offer_id == offer_id,
-                    Inventory.representation_id == representation_id
+                    Inventory.representation_id == representation_id,
                 )
             ).one()
         except NoResultFound:
             raise HTTPException(
-                 status_code=404,
-                 detail="The requested item is not available for this representation"
-             )
+                status_code=404,
+                detail="The requested item is not available for this representation",
+            )
         if inventory.available_stock == 0:
             raise HTTPException(
-                status_code=403,
+                status_code=500,
                 detail=(
                     "This item is out of order for the chosen representation, "
-                    f"try another offer or join the waiting list"
-                )
+                    "try another offer or join the waiting list"
+                ),
             )
         if inventory.available_stock < quantity:
             raise HTTPException(
-                status_code=403,
+                status_code=500,
                 detail=(
                     "There is not enough stock left for your order.\n"
                     f"Number of items available: {inventory.available_stock}"
-                )
+                ),
             )
         participation = Participation(
             confirmed=True, confirmed_at=datetime.now(), **data_dict
@@ -269,11 +263,12 @@ def join_event(data: ParticipationPostSerializer):
         inventory.available_stock = inventory.available_stock - quantity
         session.add(inventory)
         session.commit()
+        ParticipationSerializer.model_validate(participation)
         return participation
 
 
 @router.post("/cancel")
-def cancel(data: ParticipationPostSerializer):
+def cancel(data: ParticipationPostLightSerializer):
     """
     API route to cancel the confirmed participation of a user to an event for a
     given offer and representation.
@@ -287,12 +282,11 @@ def cancel(data: ParticipationPostSerializer):
     with Session(engine) as session:
         try:
             participation = session.exec(
-                select(Participation)
-                .where(
+                select(Participation).where(
                     Participation.user_id == data_dict["user_id"],
                     Participation.representation_id == representation_id,
                     Participation.offer_id == offer_id,
-                    Participation.confirmed == True
+                    Participation.confirmed == True,
                 )
             ).one()
         except NoResultFound:
@@ -301,20 +295,20 @@ def cancel(data: ParticipationPostSerializer):
                 detail=(
                     "No participation were found for this "
                     "representation for this specific offer"
-                )
+                ),
             )
         inventory = session.exec(
             select(Inventory).where(
                 Inventory.offer_id == offer_id,
-                Inventory.representation_id == representation_id
+                Inventory.representation_id == representation_id,
             )
         ).one()
         quantity = participation.quantity
-        inventory.available_stock += quantity
         session.delete(participation)
         #  Get the first in waiting list according to available stock
-        #  and set his status to pending
-        # An async task sent to a queue would be better
+        #  and set his status to pending while tickets are still available for the
+        # demands in the waiting list
+        # A task triggered by an event sent to a queue would be better though
         now = datetime.now()
         while quantity > 0:
             first_waiting = session.exec(
@@ -323,24 +317,32 @@ def cancel(data: ParticipationPostSerializer):
                     Participation.representation_id == representation_id,
                     Participation.offer_id == offer_id,
                     Participation.quantity <= quantity,
-                    Participation.wait_list == True
+                    Participation.wait_list == True,
                 )
-                .order_by(Participation.waiting_at.desc())
+                .order_by(Participation.waiting_at)
             ).first()
             if not first_waiting:
                 break
             first_waiting.pending = True
-            first_waiting.waiting_list = False
+            first_waiting.wait_list = False
             first_waiting.pending_at = now
             session.add(first_waiting)
             session.commit()
+            # If not all the tickets are gone, we can still try to find if they
+            # can still be sold to someone else on the waiting list
             quantity = quantity - first_waiting.quantity
             # Here there should be an email notification to the user
+        if quantity > 0:
+            inventory.available_stock += quantity
+        session.commit()
 
-        return Response("Your participation has been canceled", status_code=204)
+        return JSONResponse(
+            content="Your participation has been canceled", status_code=204
+        )
 
 
 # PENDING PARTICIPATION
+
 
 @router.post("/confirm", response_model=Participation)
 def confirm(data: ParticipationPostSerializer):
@@ -358,12 +360,11 @@ def confirm(data: ParticipationPostSerializer):
     with Session(engine) as session:
         try:
             participation = session.exec(
-                select(Participation)
-                .where(
+                select(Participation).where(
                     Participation.representation_id == representation_id,
                     Participation.offer_id == offer_id,
                     Participation.user_id == data_dict["user_id"],
-                    Participation.pending == True
+                    Participation.pending == True,
                 )
             ).one()
         except NoResultFound:
@@ -372,16 +373,16 @@ def confirm(data: ParticipationPostSerializer):
                 detail=(
                     "You have no participation to confirm "
                     "for this item on this representation"
-                )
+                ),
             )
         # Let's say that the user has 1 hour to confirm his presence
-        if (now - participation.pending_at)/3600 > 1:
+        if (now - participation.pending_at) / 3600 > 1:
             raise HTTPException(
                 status_code=403,
                 detail=(
                     "You have exceeded the 1 hour confirmation window, "
                     "you have lost your place in the waiting line"
-                )
+                ),
             )
         participation.confirmed = True
         participation.pending = False
