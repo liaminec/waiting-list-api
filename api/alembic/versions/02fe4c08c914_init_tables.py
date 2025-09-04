@@ -1,8 +1,8 @@
 """init tables
 
-Revision ID: 43d1ac135647
+Revision ID: 02fe4c08c914
 Revises: 
-Create Date: 2025-09-02 20:53:29.215408
+Create Date: 2025-09-04 23:56:37.974365
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '43d1ac135647'
+revision: str = '02fe4c08c914'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,7 +33,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
-    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('firstname', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('lastname', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
@@ -87,10 +87,11 @@ def upgrade() -> None:
     sa.Column('confirmed', sa.Boolean(), nullable=False),
     sa.Column('pending', sa.Boolean(), nullable=False),
     sa.Column('wait_list', sa.Boolean(), nullable=False),
+    sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('confirmed_at', sa.DateTime(), nullable=True),
     sa.Column('pending_at', sa.DateTime(), nullable=True),
     sa.Column('waiting_at', sa.DateTime(), nullable=True),
-    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('offer_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('representation_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.ForeignKeyConstraint(['offer_id'], ['offer.id'], ),
