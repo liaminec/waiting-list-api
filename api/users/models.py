@@ -1,13 +1,18 @@
 from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from sqlmodel import Relationship, SQLModel, Field
 
 from common.db.models import Model
 
 
+def generate_uuid_str() -> str:
+    return str(uuid4())
+
+
 class User(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    # I'd rather use UUID, but sqlite can't really manage UUIDs
+    id: str = Field(default_factory=generate_uuid_str, primary_key=True)
     email: str = Field(max_length=255)
     firstname: str = Field(max_length=255)
     lastname: str = Field(max_length=255)

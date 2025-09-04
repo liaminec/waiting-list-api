@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import UUID
 
 from sqlmodel import Field, Relationship
 
@@ -17,7 +16,7 @@ class Participation(Model, table=True):
     pending_at: datetime | None = Field(default=None)
     waiting_at: datetime | None = Field(default=None)
 
-    user_id: UUID = Field(foreign_key="user.id")
+    user_id: str = Field(foreign_key="user.id")
     user: User = Relationship(back_populates="participations")
     offer_id: str = Field(foreign_key="offer.id")
     offer: Offer = Relationship(back_populates="participations")
