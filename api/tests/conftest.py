@@ -30,21 +30,21 @@ def users(test_engine: Engine) -> list[User]:
             firstname="User1",
             lastname="Test",
             birthdate=datetime(1994, 1, 1),
-            address="test"
+            address="test",
         )
         user2 = User(
             email="user2@test.com",
             firstname="User2",
             lastname="Test",
             birthdate=datetime(1994, 2, 1),
-            address="test"
+            address="test",
         )
         user3 = User(
             email="user3@test.com",
             firstname="User3",
             lastname="Test",
             birthdate=datetime(1994, 3, 1),
-            address="test"
+            address="test",
         )
         session.add(user1)
         session.add(user2)
@@ -74,7 +74,7 @@ def events(test_engine: Engine, organization: Organization) -> list[Event]:
             organization_id=organization.id,
             venue_name="Olympia",
             venue_address="48 Rue de l'olympia",
-            timezone="Europe/Paris"
+            timezone="Europe/Paris",
         )
         event2 = Event(
             id="ev_002",
@@ -84,7 +84,7 @@ def events(test_engine: Engine, organization: Organization) -> list[Event]:
             organization_id=organization.id,
             venue_name="Le Zénith",
             venue_address="15 rue de la fiesta",
-            timezone="Europe/Paris"
+            timezone="Europe/Paris",
         )
         event3 = Event(
             id="ev_003",
@@ -94,7 +94,7 @@ def events(test_engine: Engine, organization: Organization) -> list[Event]:
             organization_id=organization.id,
             venue_name="Paris MK2",
             venue_address="7 quai de la Loire",
-            timezone="Europe/Paris"
+            timezone="Europe/Paris",
         )
         session.add(event1)
         session.add(event2)
@@ -112,19 +112,19 @@ def representations(test_engine: Engine, events: list[Event]) -> list[Representa
             id="rep_001",
             event_id=event1.id,
             start_datetime=datetime(2025, 7, 15, 20),
-            end_datetime=datetime(2025, 7, 15, 23)
+            end_datetime=datetime(2025, 7, 15, 23),
         )
         representation2 = Representation(
             id="rep_002",
             event_id=event1.id,
             start_datetime=datetime(2025, 7, 16, 20),
-            end_datetime=datetime(2025, 7, 16, 23)
+            end_datetime=datetime(2025, 7, 16, 23),
         )
         representation3 = Representation(
             id="rep_003",
             event_id=event2.id,
             start_datetime=datetime(2025, 7, 17, 20),
-            end_datetime=datetime(2025, 7, 17, 23)
+            end_datetime=datetime(2025, 7, 17, 23),
         )
         session.add(representation1)
         session.add(representation2)
@@ -144,7 +144,7 @@ def offer_type(test_engine: Engine) -> OfferType:
 
 @pytest.fixture
 def offers(
-        test_engine: Engine, offer_type: OfferType, events: list[Event]
+    test_engine: Engine, offer_type: OfferType, events: list[Event]
 ) -> list[Offer]:
     with Session(test_engine) as session:
         session.add(offer_type)
@@ -156,7 +156,7 @@ def offers(
             name="General Admission",
             type_id=offer_type.id,
             max_quantity_per_order=4,
-            description="Standard entry to Jazz Festival"
+            description="Standard entry to Jazz Festival",
         )
         offer2 = Offer(
             id="off_002",
@@ -164,7 +164,7 @@ def offers(
             name="VIP Package",
             type_id=offer_type.id,
             max_quantity_per_order=2,
-            description="Standard entry to Jazz Festival"
+            description="Standard entry to Jazz Festival",
         )
         offer3 = Offer(
             id="off_003",
@@ -172,7 +172,7 @@ def offers(
             name="Standard Ticket",
             type_id=offer_type.id,
             max_quantity_per_order=6,
-            description="Standard entry to Jazz Festival"
+            description="Standard entry to Jazz Festival",
         )
         session.add(offer1)
         session.add(offer2)
@@ -184,7 +184,7 @@ def offers(
 
 @pytest.fixture
 def inventories(
-        test_engine: Engine, offers: list[Offer], representations: list[Representation]
+    test_engine: Engine, offers: list[Offer], representations: list[Representation]
 ) -> list[Inventory]:
     with Session(test_engine) as session:
         session_add(session, offers)
@@ -200,21 +200,21 @@ def inventories(
             offer_id=offer1.id,
             representation_id=representation1.id,
             total_stock=500,
-            available_stock=0
+            available_stock=0,
         )
         inventory2 = Inventory(
             id="inv_002",
             offer_id=offer1.id,
             representation_id=representation2.id,
             total_stock=500,
-            available_stock=0
+            available_stock=2,
         )
         inventory3 = Inventory(
             id="inv_003",
             offer_id=offer3.id,
             representation_id=representation3.id,
             total_stock=500,
-            available_stock=5
+            available_stock=5,
         )
         session.add(inventory1)
         session.add(inventory2)
