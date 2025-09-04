@@ -309,7 +309,7 @@ def test_leave_waiting_list_ok(
                 "quantity": 1,
             },
         )
-        assert response.status_code == 204
+        assert response.status_code == 200
         assert response.json() == (
             "The user has successfully been " "removed from the waiting list"
         )

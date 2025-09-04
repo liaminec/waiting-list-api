@@ -345,7 +345,7 @@ def test_cancel_with_wait_list(
                 "representation_id": representation.id,
             },
         )
-        assert response.status_code == 204
+        assert response.status_code == 200
         assert response.json() == "Your participation has been canceled"
         session.refresh(inventory)
         assert inventory.available_stock == 1
@@ -398,7 +398,7 @@ def test_cancel_no_wait_list() -> None:
                     "representation_id": representation.id,
                 },
             )
-            assert response.status_code == 204
+            assert response.status_code == 200
             assert response.json() == "Your participation has been canceled"
             session.refresh(inventory)
             assert inventory.available_stock == 4
