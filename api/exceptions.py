@@ -1,0 +1,2 @@
+class UnsetVarError(Exception):
+    pass
